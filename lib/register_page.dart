@@ -5,23 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
-import 'package:to_do/home_page.dart';
-import 'package:to_do/register_page.dart';
-import 'package:to_do/welcome_page.dart';
+import 'package:to_do/login_page.dart';
 import 'URL/API.dart' as apiURL;
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formkey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final bool _passwordReveal = false;
+  final _emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -41,20 +39,33 @@ class _LoginPageState extends State<LoginPage> {
                         keyboardType: TextInputType.text,
                         validator: (username) {
                           if (username == null || username.isEmpty) {
-                            return 'Por favor, digite seu username';
+                            return 'Por favor, digite um username';
                           }
                           return null;
                         }),
                     TextFormField(
+                      decoration: const InputDecoration(labelText: 'Senha'),
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Senha',
-                      ),
                       keyboardType: TextInputType.text,
                       validator: (senha) {
                         if (senha == null || senha.isEmpty) {
-                          return 'Por favor, digite sua senha';
+                          return 'Por favor, digite uma senha';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (email) {
+                        if (email == null || email.isEmpty) {
+                          return 'Por favor, digite um email';
+                        } else if (!RegExp(
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                            .hasMatch(_emailController.text)) {
+                          return 'Por favor, digite um email válido!';
                         }
                         return null;
                       },
@@ -63,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         FocusScopeNode currentFocus = FocusScope.of(context);
                         if (_formkey.currentState!.validate()) {
-                          bool match = await login();
+                          bool match = await register();
                           if (!currentFocus.hasPrimaryFocus) {
                             currentFocus.unfocus();
                           }
@@ -72,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => WelcomePage()));
+                                    builder: (context) => LoginPage()));
                           } else {
                             _passwordController.clear();
                             // ignore: use_build_context_synchronously
@@ -81,16 +92,8 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         }
                       },
-                      child: const Text('Login'),
+                      child: Text('Registrar'),
                     ),
-                    ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const RegisterPage()));
-                        },
-                        child: const Text('Registro'))
                   ],
                 ),
               ),
@@ -100,30 +103,29 @@ class _LoginPageState extends State<LoginPage> {
   // ignore: prefer_const_constructors
   final snackBar = SnackBar(
     content: const Text(
-      'Username ou senha inválidos!',
+      'Username, senha ou email inválidos!',
       textAlign: TextAlign.center,
     ),
     backgroundColor: Colors.redAccent,
-    behavior: SnackBarBehavior.floating,
   );
 
-  Future<bool> login() async {
+  Future<bool> register() async {
     var api = apiURL.URl;
 
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    var url = Uri.parse('${api}login');
+    var url = Uri.parse('${api}signup');
     var response = await http.post(
       url,
       body: {
         'username': _usernameController.text,
-        'password': _passwordController.text
+        'password': _passwordController.text,
+        'email': _emailController.text
       },
     );
-    if (response.statusCode == 200) {
-      String token = jsonDecode(response.body)['token'];
-      String idUser = jsonDecode(response.body)['_id'];
-      await sharedPreferences.setString('token', 'Bearer $token');
-      await sharedPreferences.setString('idUser', idUser);
+    if (response.statusCode == 201) {
+      await sharedPreferences.setString(
+          'token', "${jsonDecode(response.body)['token']}");
+      print(jsonDecode(response.body)['token']);
       return true;
     } else {
       print(jsonDecode(response.body));

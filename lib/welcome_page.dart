@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:to_do/home_page.dart';
 import 'package:to_do/login_page.dart';
@@ -31,8 +32,9 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: prefer_const_constructors
     return Scaffold(
-      body: Center(
+      body: const Center(
         child: CircularProgressIndicator(),
       ),
     );
