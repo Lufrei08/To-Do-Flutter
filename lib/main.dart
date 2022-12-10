@@ -14,10 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'To Do',
-      theme: ThemeData(
-        useMaterial3: true,
-        primarySwatch: Colors.grey,
-      ),
+      theme: ThemeData(useMaterial3: true, primarySwatch: Colors.purple),
       home: const WelcomePage(),
     );
   }

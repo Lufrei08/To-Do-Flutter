@@ -92,7 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           }
                         }
                       },
-                      child: Text('Registrar'),
+                      child: const Text('Registrar'),
                     ),
                   ],
                 ),
